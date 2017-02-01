@@ -62,13 +62,10 @@ fn main() {
 
     // Connect hardware
     //cpu.devices.push(Box::new(dcpu::HWMonitorLEM1802{connected: false, ram_location: 0}));
-    /*
-    let mut floppy = Box::new(dcpu::HWFloppyM35FD::new());
-    floppy.sectors.push(dcpu::HWFloppyM35FDSector{mem: [1; 512]});
-    floppy.state = 1;
-    cpu.devices.push(floppy);
-    */
-
+    //let mut floppy = Box::new(dcpu::HWFloppyM35FD::new());
+    //floppy.sectors.push(dcpu::HWFloppyM35FDSector{mem: [1; 512]});
+    //floppy.state = 1;
+    //cpu.devices.push(floppy);
 
     let clock = DeviceClockGeneric::new();
     cpu.add_device(Box::new(clock));
@@ -86,11 +83,9 @@ fn main() {
         // If printing is not on, then the CPU will run roughly at 100 kHz
         let cycles = dcpu::CYCLE_HZ / FPS;
         while !cpu.terminate {
-            //let now = time::Instant::now();
+            let start = time::Instant::now();
             cpu.run(cycles);
-            //let elapsed = now.elapsed();
-            // TODO: Use elapsed to sleep slightly shorter to get timing right
-            thread::sleep(time::Duration::from_millis((1000 / FPS) as u64));
+            thread::sleep(time::Duration::from_millis((1000 / FPS) as u64) - start.elapsed());
         }
     }
 }

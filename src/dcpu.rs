@@ -87,7 +87,7 @@ impl DCPU {
 
         let end_cycle = ((self.cycle + cycles) as isize - self.overshot_cycles) as usize;
 
-        while self.cycle < end_cycle {
+        while !self.terminate && self.cycle < end_cycle {
             self.tick();
         }
         self.overshot_cycles = self.cycle as isize - end_cycle as isize;

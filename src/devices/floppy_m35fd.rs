@@ -51,18 +51,18 @@ pub struct DeviceFloppyM35FD {
     interrupt_queued: bool,
 }
 
-const ERROR_NONE: u16       = 0x0000;
-const ERROR_BUSY: u16       = 0x0001;
-const ERROR_NO_MEDIA: u16   = 0x0002;
-const ERROR_PROTECTED: u16  = 0x0003;
-const ERROR_EJECT: u16      = 0x0004;
+const ERROR_NONE: u16 = 0x0000;
+const ERROR_BUSY: u16 = 0x0001;
+const ERROR_NO_MEDIA: u16 = 0x0002;
+const ERROR_PROTECTED: u16 = 0x0003;
+const ERROR_EJECT: u16 = 0x0004;
 const ERROR_BAD_SECTOR: u16 = 0x0005;
-const ERROR_BROKEN: u16     = 0xffff;
+const ERROR_BROKEN: u16 = 0xffff;
 
-const STATE_NO_MEDIA: u16   = 0x0000;
-const STATE_READY: u16      = 0x0001;
-const STATE_READY_WP: u16   = 0x0002;
-const STATE_BUSY: u16       = 0x0003;
+const STATE_NO_MEDIA: u16 = 0x0000;
+const STATE_READY: u16 = 0x0001;
+const STATE_READY_WP: u16 = 0x0002;
+const STATE_BUSY: u16 = 0x0003;
 
 impl DeviceFloppyM35FD {
     pub fn new() -> DeviceFloppyM35FD {
@@ -122,25 +122,38 @@ impl DeviceFloppyM35FD {
 }
 
 impl Device for DeviceFloppyM35FD {
-    fn info_hardware_id_upper(&self) -> u16 { 0x4fd5 }
-    fn info_hardware_id_lower(&self) -> u16 { 0x24c5 }
-    fn info_manufacturer_id_upper(&self) -> u16 { 0x1eb3 }
-    fn info_manufacturer_id_lower(&self) -> u16 { 0x7e91 }
-    fn info_version(&self) -> u16 { 0x000b }
+    fn info_hardware_id_upper(&self) -> u16 {
+        0x4fd5
+    }
+    fn info_hardware_id_lower(&self) -> u16 {
+        0x24c5
+    }
+    fn info_manufacturer_id_upper(&self) -> u16 {
+        0x1eb3
+    }
+    fn info_manufacturer_id_lower(&self) -> u16 {
+        0x7e91
+    }
+    fn info_version(&self) -> u16 {
+        0x000b
+    }
 
     fn process_interrupt(&mut self, cpu: &mut DCPU) -> () {
         let a = cpu.reg[dcpu::REG_A];
         match a {
-            0 => { // Poll device
+            0 => {
+                // Poll device
                 cpu.reg[dcpu::REG_B] = self.state() as u16;
                 cpu.reg[dcpu::REG_C] = self.error() as u16;
                 self.error = ERROR_NONE;
-            },
-            1 => { // Set interrupt
+            }
+            1 => {
+                // Set interrupt
                 let x = cpu.reg[dcpu::REG_X];
                 self.interrupt_message = x;
-            },
-            2 => { // Read sector
+            }
+            2 => {
+                // Read sector
                 let x = cpu.reg[dcpu::REG_X];
                 let y = cpu.reg[dcpu::REG_Y];
 
@@ -168,12 +181,13 @@ impl Device for DeviceFloppyM35FD {
                         } else {
                             ERROR_BAD_SECTOR
                         }
-                    },
+                    }
                     _ => ERROR_BROKEN,
                 };
                 self.set_error(error);
-            },
-            3 => { // Write sector
+            }
+            3 => {
+                // Write sector
                 let x = cpu.reg[dcpu::REG_X];
                 let y = cpu.reg[dcpu::REG_Y];
 
@@ -193,14 +207,14 @@ impl Device for DeviceFloppyM35FD {
                         } else {
                             ERROR_BAD_SECTOR
                         }
-                    },
+                    }
                     _ => ERROR_BROKEN,
                 };
                 self.set_error(error);
             }
             _ => {
                 // Do nothing
-            },
+            }
         }
     }
 
@@ -219,29 +233,31 @@ impl Device for DeviceFloppyM35FD {
                             match floppy_disk.sectors.get(self.rw_sector as usize) {
                                 Some(s) => {
                                     for i in 0..FLOPPY_SECTOR_SIZE {
-                                        cpu.mem[self.rw_dcpu_address.wrapping_add(i as u16) as usize] = s[i];
+                                        cpu.mem[self.rw_dcpu_address.wrapping_add(i as u16) as
+                                        usize] = s[i];
                                     }
-                                },
+                                }
                                 None => {
                                     for i in 0..FLOPPY_SECTOR_SIZE {
-                                        cpu.mem[self.rw_dcpu_address.wrapping_add(i as u16) as usize] = 0;
+                                        cpu.mem[self.rw_dcpu_address.wrapping_add(i as u16) as
+                                        usize] = 0;
                                     }
-                                },
+                                }
                             }
                             state = match floppy_disk.write_protected {
                                 true => STATE_READY_WP,
                                 false => STATE_READY,
                             };
                             error = ERROR_NONE;
-                        },
+                        }
                         None => {
                             error = ERROR_EJECT;
-                        },
+                        }
                     }
                     self.set_state(state);
                     self.set_error(error);
                 }
-            },
+            }
             FloppyInternalState::WaitToWrite => {
                 if self.rw_wait_cycles > cycles {
                     self.rw_wait_cycles -= cycles;
@@ -259,12 +275,14 @@ impl Device for DeviceFloppyM35FD {
                             match floppy_disk.sectors.get_mut(self.rw_sector as usize) {
                                 Some(ref mut s) => {
                                     for i in 0..FLOPPY_SECTOR_SIZE {
-                                        s[i as usize] = cpu.mem[self.rw_dcpu_address.wrapping_add(i as u16) as usize];
+                                        s[i as usize] = cpu.mem[self.rw_dcpu_address
+                                            .wrapping_add(i as u16) as
+                                                        usize];
                                     }
-                                },
+                                }
                                 None => {
                                     unreachable!();
-                                },
+                                }
                             }
 
                             // TODO: Potentially do a sector clean-up if trailing sectors
@@ -275,16 +293,16 @@ impl Device for DeviceFloppyM35FD {
                                 false => STATE_READY,
                             };
                             error = ERROR_NONE;
-                        },
+                        }
                         None => {
                             error = ERROR_EJECT;
-                        },
+                        }
                     }
                     self.set_state(state);
                     self.set_error(error);
                 }
-            },
-            FloppyInternalState::Idle => {},
+            }
+            FloppyInternalState::Idle => {}
         }
 
         if self.interrupt_queued {

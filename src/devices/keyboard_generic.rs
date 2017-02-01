@@ -22,8 +22,8 @@ fn with_shift(key: u16) -> u16 {
         0x2f => 0x3f,
         0x2d => 0x5f,
         0x3d => 0x2b,
-        a @ 0x61 ... 0x7a => a - 32,
-        a @ 0x5b ... 0x5d => a + 32,
+        a @ 0x61...0x7a => a - 32,
+        a @ 0x5b...0x5d => a + 32,
         a => a,
     }
 }
@@ -88,38 +88,48 @@ impl DeviceKeyboardGeneric {
 }
 
 impl Device for DeviceKeyboardGeneric {
-    fn info_hardware_id_upper(&self) -> u16 { 0x30cf }
-    fn info_hardware_id_lower(&self) -> u16 { 0x7406 }
-    fn info_manufacturer_id_upper(&self) -> u16 { 0x0 }
-    fn info_manufacturer_id_lower(&self) -> u16 { 0x0 }
-    fn info_version(&self) -> u16 { 1 }
+    fn info_hardware_id_upper(&self) -> u16 {
+        0x30cf
+    }
+    fn info_hardware_id_lower(&self) -> u16 {
+        0x7406
+    }
+    fn info_manufacturer_id_upper(&self) -> u16 {
+        0x0
+    }
+    fn info_manufacturer_id_lower(&self) -> u16 {
+        0x0
+    }
+    fn info_version(&self) -> u16 {
+        1
+    }
 
     fn process_interrupt(&mut self, cpu: &mut DCPU) -> () {
         let reg_a = cpu.reg[dcpu::REG_A];
         let reg_b = cpu.reg[dcpu::REG_B];
         match reg_a {
-            0 => { // Clear keyboard buffer
+            0 => {
+                // Clear keyboard buffer
                 self.buffer.clear();
-            },
-            1 => { // Pop from buffer queue
+            }
+            1 => {
+                // Pop from buffer queue
                 let v = self.buffer.pop().unwrap_or(0);
                 cpu.reg[dcpu::REG_C] = v;
-            },
-            2 => { // Check if pressed
+            }
+            2 => {
+                // Check if pressed
                 let key = cpu.reg[dcpu::REG_B];
                 cpu.reg[dcpu::REG_C] = if key < 0x92 && self.pressed[key as usize] {
                     1
                 } else {
                     0
                 };
-            },
-            3 => { // Set interrupt
-                self.interrupt_message = if reg_b != 0 {
-                    Some(reg_b)
-                } else {
-                    None
-                };
-            },
+            }
+            3 => {
+                // Set interrupt
+                self.interrupt_message = if reg_b != 0 { Some(reg_b) } else { None };
+            }
             _ => {}
         }
     }

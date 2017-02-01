@@ -11,7 +11,8 @@ fn test_emulerator_basic() {
 
     {
         let mut cpu = DCPU::new();
-        cpu.mem[0] = 0x7c01; cpu.mem[1] = 0x0064; // SET A, 100
+        cpu.mem[0] = 0x7c01;
+        cpu.mem[1] = 0x0064; // SET A, 100
         cpu.mem[2] = 0x00e1; // SET J, A
         cpu.tick();
         assert_eq!(cpu.reg[0], 100);
@@ -53,11 +54,11 @@ fn sub() {
     cpu.tick();
     assert_eq!(cpu.reg[0], 10000);
     cpu.tick();
-    assert_eq!(cpu.reg[0],  9990);
+    assert_eq!(cpu.reg[0], 9990);
     cpu.tick();
-    assert_eq!(cpu.reg[0],  9980);
+    assert_eq!(cpu.reg[0], 9980);
     cpu.tick();
-    assert_eq!(cpu.reg[0],  8980);
+    assert_eq!(cpu.reg[0], 8980);
 }
 
 #[test]

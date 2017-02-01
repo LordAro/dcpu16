@@ -27,11 +27,7 @@ const COLOR_REGISTRY: ShellColor = ShellColor::Yellow;
 const COLOR_NAMED: ShellColor = ShellColor::LightCyan;
 
 fn maybe_colorize(s: String, color: ShellColor, enable: bool) -> String {
-    if enable {
-        colorize(s, color)
-    } else {
-        s
-    }
+    if enable { colorize(s, color) } else { s }
 }
 
 fn colorize(s: String, color: ShellColor) -> String {
@@ -108,68 +104,60 @@ fn special_opcode_str(opcode: usize) -> Result<&'static str, ()> {
     }
 }
 
-fn value_str(cpu: &DCPU, value: usize, offset: &mut u16,
-             lvalue: bool, use_color: bool) -> String {
+fn value_str(cpu: &DCPU, value: usize, offset: &mut u16, lvalue: bool, use_color: bool) -> String {
     match value {
-        0x00 ... 0x07  => { 
+        0x00...0x07 => {
             let s = registry_str(value).to_string();
             maybe_colorize(s, COLOR_REGISTRY, use_color)
-        },
-        0x08 ... 0x0f => { 
-            let s = registry_str(value-0x08).to_string();
+        }
+        0x08...0x0f => {
+            let s = registry_str(value - 0x08).to_string();
             let ss = maybe_colorize(s, COLOR_REGISTRY, use_color);
             format!("[{}]", ss)
-        },
-        0x10 ... 0x17 => {
+        }
+        0x10...0x17 => {
             let v = cpu.mem[(cpu.pc + *offset) as usize];
-            let s = registry_str(value-0x10).to_string();
+            let s = registry_str(value - 0x10).to_string();
             let ss = maybe_colorize(s, COLOR_REGISTRY, use_color);
             let vv = maybe_colorize(format!("{}", v), COLOR_NUM_LITERAL, use_color);
             *offset += 1;
             format!("[{}+{}]", ss, vv)
-        },
+        }
         0x18 => {
             if lvalue {
                 maybe_colorize("PUSH".to_string(), COLOR_NAMED, use_color)
             } else {
                 maybe_colorize("POP".to_string(), COLOR_NAMED, use_color)
             }
-        },
-        0x19 => { 
-            maybe_colorize("PEEK".to_string(), COLOR_NAMED, use_color)
-        },
+        }
+        0x19 => maybe_colorize("PEEK".to_string(), COLOR_NAMED, use_color),
         0x1a => {
             let v = cpu.mem[(cpu.pc + *offset) as usize];
             *offset += 1;
             let ss = maybe_colorize("PICK".to_string(), COLOR_NAMED, use_color);
             let vv = maybe_colorize(format!("{}", v), COLOR_NUM_LITERAL, use_color);
             format!("{} {}", ss, vv)
-        },
-        0x1b => {
-            maybe_colorize("SP".to_string(), COLOR_NAMED, use_color)
-        },
-        0x1c => { 
-            maybe_colorize("PC".to_string(), COLOR_NAMED, use_color)
-        },
-        0x1d => { 
-            maybe_colorize("EX".to_string(), COLOR_NAMED, use_color)
-        },
+        }
+        0x1b => maybe_colorize("SP".to_string(), COLOR_NAMED, use_color),
+        0x1c => maybe_colorize("PC".to_string(), COLOR_NAMED, use_color),
+        0x1d => maybe_colorize("EX".to_string(), COLOR_NAMED, use_color),
         0x1e => {
             let v = cpu.mem[cpu.pc.wrapping_add(*offset) as usize];
             let ss = maybe_colorize(format!("0x{:04x}", v), COLOR_NUM_LITERAL, use_color);
             *offset = offset.wrapping_add(1);
             format!("[{}]", ss)
-        },
-        0x1f => { 
+        }
+        0x1f => {
             let v = cpu.mem[cpu.pc.wrapping_add(*offset) as usize];
             *offset = offset.wrapping_add(1);
             maybe_colorize(format!("0x{:04x}", v), COLOR_NUM_LITERAL, use_color)
-        },
+        }
         _ => {
             //format!("0x{:04x}", ((0x10000 + value - 0x21) & 0xffff) as i16)
             maybe_colorize(format!("{}", ((0x10000 + value - 0x21) & 0xffff) as i16),
-                        COLOR_NUM_LITERAL, use_color)
-        },
+                           COLOR_NUM_LITERAL,
+                           use_color)
+        }
     }
 }
 
@@ -202,7 +190,7 @@ pub fn disassemble_instruction(cpu: &DCPU, use_color: bool) -> (u16, String) {
             Ok(s) => {
                 let ss = maybe_colorize(s.to_string(), COLOR_INSTRUCTION, use_color);
                 (offset, format!("{} {}", ss, s_a))
-            },
+            }
             Err(_) => {
                 let ss = maybe_colorize("DAT".to_string(), COLOR_INSTRUCTION, use_color);
                 let vv = maybe_colorize(format!("0x{:04x}", word), COLOR_NUM_LITERAL, use_color);
@@ -217,7 +205,7 @@ pub fn disassemble_instruction(cpu: &DCPU, use_color: bool) -> (u16, String) {
             Ok(s) => {
                 let ss = maybe_colorize(s.to_string(), COLOR_INSTRUCTION, use_color);
                 (offset, format!("{} {}, {}", ss, s_b, s_a))
-            },
+            }
             Err(_) => {
                 let ss = maybe_colorize("DAT".to_string(), COLOR_INSTRUCTION, use_color);
                 let vv = maybe_colorize(format!("0x{:04x}", word), COLOR_NUM_LITERAL, use_color);
@@ -226,5 +214,3 @@ pub fn disassemble_instruction(cpu: &DCPU, use_color: bool) -> (u16, String) {
         }
     }
 }
-
-

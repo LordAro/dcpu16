@@ -4,7 +4,7 @@ extern crate getopts;
 mod cli;
 
 use std::io::prelude::*;
-use std::io::{BufReader,BufWriter};
+use std::io::{BufReader, BufWriter};
 use std::error::Error;
 use std::fs::File;
 use std::path::Path;
@@ -18,7 +18,10 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let program = args[0].clone();
 
-    opts.optopt("o", "output", "output binary file to path (otherwise defaults to output.bin)", "PATH");
+    opts.optopt("o",
+                "output",
+                "output binary file to path (otherwise defaults to output.bin)",
+                "PATH");
     opts.optflag("v", "version", "print version");
     opts.optflag("h", "help", "print this help menu");
     let matches = match opts.parse(&args[1..]) {
@@ -26,7 +29,7 @@ fn main() {
         Err(why) => {
             println!("{}", why);
             return;
-        },
+        }
     };
 
     if matches.opt_present("h") {
@@ -55,15 +58,17 @@ fn main() {
     let path = Path::new(filename);
     let file = match File::open(&path) {
         Err(why) => {
-            println!("Could not open file {}: {}", path.display(), why.description());
+            println!("Could not open file {}: {}",
+                     path.display(),
+                     why.description());
             exit(1);
-        },
+        }
         Ok(file) => file,
     };
     for line in BufReader::new(&file).lines() {
         match line {
-            Ok(s) => {lines.push(s.trim_matches(x).to_string())},
-            Err(_) => {},
+            Ok(s) => lines.push(s.trim_matches(x).to_string()),
+            Err(_) => {}
         }
     }
 
@@ -76,9 +81,11 @@ fn main() {
         Ok(_) => {
             let file = match File::create(&Path::new(&output_filename)) {
                 Err(why) => {
-                    println!("Could not open file {}: {}", path.display(), why.description());
+                    println!("Could not open file {}: {}",
+                             path.display(),
+                             why.description());
                     exit(1);
-                },
+                }
                 Ok(f) => f,
             };
             let mut writer = BufWriter::new(&file);
@@ -91,8 +98,7 @@ fn main() {
                 //println!("{}: {:04x}", i, cpu.mem[i as usize]);
                 //let ret = file.write_le_u16(cpu.mem[i as usize]);
                 match ret2 {
-                    Ok(_) => {
-                    },
+                    Ok(_) => {}
                     Err(_) => {
                         println!("IO Error");
                         break;
@@ -101,11 +107,11 @@ fn main() {
 
                 //io::stdout().write_be_u16(cpu.mem[i as usize]);
             }
-        },
+        }
         Err(err) => {
             assembler::print_parse_error(&cpu, &lines[err.line as usize][..], err);
             exit(1);
-        },
+        }
     }
 
     /*

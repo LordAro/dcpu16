@@ -128,38 +128,33 @@ pub enum ParsingErrorType {
 
 pub fn format_error(etype: &ParsingErrorType, cpu: &PCPU) -> String {
     match etype {
-        &ParsingErrorType::InvalidLiteral =>
-            format!("Invalid literal"),
-        &ParsingErrorType::UnclosedStringLiteral =>
-            format!("Unclosed string literal"),
-        &ParsingErrorType::IllegalCharacter =>
-            format!("Illegal character"),
-        &ParsingErrorType::IllegalLineStart =>
-            format!("Line must start with an instruction or a label"),
-        &ParsingErrorType::IllegalLvalue=>
-            format!("Illegal L-value; unable to assign to numeric literal"),
-        &ParsingErrorType::ExpectingComma =>
-            format!("Expecting comma"),
-        &ParsingErrorType::ExpectingOperand =>
-            format!("Expecting operand"),
-        &ParsingErrorType::ExpectingLiteral =>
-            format!("Expecting literal or label"),
-        &ParsingErrorType::ExpectingRightBracket =>
-            format!("Expecting closing bracket"),
-        &ParsingErrorType::ExpectingLabel =>
-            format!("Expecting label name"),
-        &ParsingErrorType::EndOfTokens =>
-            format!("Expecting more tokens after this one"),
-        &ParsingErrorType::ExtraTokens =>
-            format!("Extra tokens found after successfully parsed line"),
-        &ParsingErrorType::IncorrectPushPop =>
-            format!("Push cannot be used as a-operand / Pop cannot be used as b-operand"),
+        &ParsingErrorType::InvalidLiteral => format!("Invalid literal"),
+        &ParsingErrorType::UnclosedStringLiteral => format!("Unclosed string literal"),
+        &ParsingErrorType::IllegalCharacter => format!("Illegal character"),
+        &ParsingErrorType::IllegalLineStart => {
+            format!("Line must start with an instruction or a label")
+        }
+        &ParsingErrorType::IllegalLvalue => {
+            format!("Illegal L-value; unable to assign to numeric literal")
+        }
+        &ParsingErrorType::ExpectingComma => format!("Expecting comma"),
+        &ParsingErrorType::ExpectingOperand => format!("Expecting operand"),
+        &ParsingErrorType::ExpectingLiteral => format!("Expecting literal or label"),
+        &ParsingErrorType::ExpectingRightBracket => format!("Expecting closing bracket"),
+        &ParsingErrorType::ExpectingLabel => format!("Expecting label name"),
+        &ParsingErrorType::EndOfTokens => format!("Expecting more tokens after this one"),
+        &ParsingErrorType::ExtraTokens => {
+            format!("Extra tokens found after successfully parsed line")
+        }
+        &ParsingErrorType::IncorrectPushPop => {
+            format!("Push cannot be used as a-operand / Pop cannot be used as b-operand")
+        }
         &ParsingErrorType::UnknownLabel(label) => {
             match cpu.id_to_label.get(&label) {
                 Some(s) => format!("Label definition not found: {}", s),
                 None => format!("Unknown label definition not found"),
             }
-        },
+        }
     }
 }
 
@@ -181,15 +176,30 @@ struct ParsingInfo {
 
 impl ParsingInfo {
     fn new() -> ParsingInfo {
-        ParsingInfo { operand: 0, extra_byte: None, unassigned: false, offset: 0 }
+        ParsingInfo {
+            operand: 0,
+            extra_byte: None,
+            unassigned: false,
+            offset: 0,
+        }
     }
 
     fn new_single(operand: u16) -> ParsingInfo {
-        ParsingInfo{operand: operand, extra_byte: None, unassigned: false, offset: 0}
+        ParsingInfo {
+            operand: operand,
+            extra_byte: None,
+            unassigned: false,
+            offset: 0,
+        }
     }
 
     fn new_extra(operand: u16, extra: u16) -> ParsingInfo {
-        ParsingInfo{operand: operand, extra_byte: Some(extra), unassigned: false, offset: 0}
+        ParsingInfo {
+            operand: operand,
+            extra_byte: Some(extra),
+            unassigned: false,
+            offset: 0,
+        }
     }
 }
 
@@ -259,7 +269,7 @@ impl fmt::Display for TokenType {
 
 fn legal_label_char(c: char) -> bool {
     match c {
-        'A' ... 'Z' | 'a' ... 'z' | '_' | '0' ... '9' => true,
+        'A'...'Z' | 'a'...'z' | '_' | '0'...'9' => true,
         _ => false,
     }
 }
@@ -287,7 +297,7 @@ fn keyword_token(s: &str) -> Option<TokenType> {
         "PC" => Some(TokenType::PC),
         "SP" => Some(TokenType::SP),
         "EX" => Some(TokenType::EX),
-        _ => None
+        _ => None,
     }
 }
 
@@ -343,19 +353,61 @@ fn special_opcode(s: &str) -> Option<usize> {
 }
 
 pub fn tokenize(line_no: usize, line: &str, cpu: &mut PCPU) -> Result<Vec<Token>, ParsingError> {
-    let mut tokens: Vec<Token> = vec!();
+    let mut tokens: Vec<Token> = vec![];
 
     let mut i = 0;
     while i < line.len() {
         let token = match line.chars().nth(i).unwrap() {
-            '[' => Token { ttype: TokenType::LeftBracket, col: i, len: 1 },
-            ']' => Token { ttype: TokenType::RightBracket, col: i, len: 1 },
-            '+' => Token { ttype: TokenType::Addition, col: i, len: 1},
+            '[' => {
+                Token {
+                    ttype: TokenType::LeftBracket,
+                    col: i,
+                    len: 1,
+                }
+            }
+            ']' => {
+                Token {
+                    ttype: TokenType::RightBracket,
+                    col: i,
+                    len: 1,
+                }
+            }
+            '+' => {
+                Token {
+                    ttype: TokenType::Addition,
+                    col: i,
+                    len: 1,
+                }
+            }
             //'-' => Token { ttype: TokenType::Subtraction, col: i, len: 1},
-            '*' => Token { ttype: TokenType::Multiplication, col: i, len: 1},
-            '/' => Token { ttype: TokenType::Division, col: i, len: 1},
-            ',' => Token { ttype: TokenType::Comma, col: i, len: 1},
-            ':' => Token { ttype: TokenType::Colon, col: i, len: 1},
+            '*' => {
+                Token {
+                    ttype: TokenType::Multiplication,
+                    col: i,
+                    len: 1,
+                }
+            }
+            '/' => {
+                Token {
+                    ttype: TokenType::Division,
+                    col: i,
+                    len: 1,
+                }
+            }
+            ',' => {
+                Token {
+                    ttype: TokenType::Comma,
+                    col: i,
+                    len: 1,
+                }
+            }
+            ':' => {
+                Token {
+                    ttype: TokenType::Colon,
+                    col: i,
+                    len: 1,
+                }
+            }
             ';' => break,
             '"' => {
                 let col = i;
@@ -392,22 +444,26 @@ pub fn tokenize(line_no: usize, line: &str, cpu: &mut PCPU) -> Result<Vec<Token>
                 let len = s.len();
 
                 if !closed {
-                    let err = ParsingError{ line: line_no,
-                                            col: col,
-                                            len: len+1,
-                                            global: false,
-                                            etype: ParsingErrorType::UnclosedStringLiteral };
+                    let err = ParsingError {
+                        line: line_no,
+                        col: col,
+                        len: len + 1,
+                        global: false,
+                        etype: ParsingErrorType::UnclosedStringLiteral,
+                    };
                     return Err(err);
                 }
 
                 cpu.string_literals.push(s);
                 cpu.next_string_id += 1;
 
-                Token { ttype: TokenType::StringLiteral(id),
-                        col: col,
-                        len: len+2 }
-            },
-            '0' ... '9' | '-' => {
+                Token {
+                    ttype: TokenType::StringLiteral(id),
+                    col: col,
+                    len: len + 2,
+                }
+            }
+            '0'...'9' | '-' => {
                 // Parse literal (dec/hex)
                 //let mut s: String = String::new();
                 let col = i;
@@ -420,8 +476,8 @@ pub fn tokenize(line_no: usize, line: &str, cpu: &mut PCPU) -> Result<Vec<Token>
 
                 let res: Option<isize> = if i + 1 < line.len() &&
                                             line.chars().nth(i).unwrap() == '0' &&
-                                            (line.chars().nth(i+1).unwrap() == 'X' ||
-                                             line.chars().nth(i+1).unwrap() == 'x') {
+                                            (line.chars().nth(i + 1).unwrap() == 'X' ||
+                                             line.chars().nth(i + 1).unwrap() == 'x') {
                     i += 2;
                     end_col += 2;
                     // Hexadecimal
@@ -464,21 +520,32 @@ pub fn tokenize(line_no: usize, line: &str, cpu: &mut PCPU) -> Result<Vec<Token>
                 };
                 match res {
                     Some(value) => {
-                        Token { ttype: TokenType::NumericLiteral((if minus { -value } else { value }) as u16),
-                                col: col,
-                                len: end_col-col }
-                    },
+                        Token {
+                            ttype: TokenType::NumericLiteral((if minus {
+                                -value
+                            } else {
+                                value
+                            }) as u16),
+                            col: col,
+                            len: end_col - col,
+                        }
+                    }
                     None => {
-                        let err = ParsingError{ line: line_no,
-                                                col: col,
-                                                len: i-col,
-                                                global: false,
-                                                etype: ParsingErrorType::InvalidLiteral };
+                        let err = ParsingError {
+                            line: line_no,
+                            col: col,
+                            len: i - col,
+                            global: false,
+                            etype: ParsingErrorType::InvalidLiteral,
+                        };
                         return Err(err);
                     }
                 }
-            },
-            ' ' | '\n' | '\r' | '\t' => { i += 1; continue },
+            }
+            ' ' | '\n' | '\r' | '\t' => {
+                i += 1;
+                continue;
+            }
             _ => {
                 // Read as label, instruction or registry
                 let col = i;
@@ -495,64 +562,80 @@ pub fn tokenize(line_no: usize, line: &str, cpu: &mut PCPU) -> Result<Vec<Token>
                     }
                 }
                 if i + 1 == col {
-                    let err = ParsingError{ line: line_no,
-                                            col: col,
-                                            len: 0,
-                                            global: false,
-                                            etype: ParsingErrorType::IllegalCharacter };
+                    let err = ParsingError {
+                        line: line_no,
+                        col: col,
+                        len: 0,
+                        global: false,
+                        etype: ParsingErrorType::IllegalCharacter,
+                    };
                     return Err(err);
                 } else if s.len() == 1 && registry_char(s.chars().nth(0).unwrap()) >= 0 {
-                    Token { ttype: TokenType::Registry(registry_char(s.chars().nth(0).unwrap()) as u16),
-                            col: col,
-                            len: 1 }
+                    Token {
+                        ttype: TokenType::Registry(registry_char(s.chars().nth(0).unwrap()) as u16),
+                        col: col,
+                        len: 1,
+                    }
                 } else if let Some(ttype) = keyword_token(&s[..]) {
-                    Token { ttype: ttype,
-                            col: col,
-                            len: s.len() }
+                    Token {
+                        ttype: ttype,
+                        col: col,
+                        len: s.len(),
+                    }
                 } else if s.len() == 3 && basic_opcode(&s[..]).is_some() {
-                    Token { ttype: TokenType::BasicOpcode(basic_opcode(&s[..]).unwrap()),
-                            col: col,
-                            len: 3 }
+                    Token {
+                        ttype: TokenType::BasicOpcode(basic_opcode(&s[..]).unwrap()),
+                        col: col,
+                        len: 3,
+                    }
                 } else if s.len() == 3 && special_opcode(&s[..]).is_some() {
-                    Token { ttype: TokenType::SpecialOpcode(special_opcode(&s[..]).unwrap()),
-                            col: col,
-                            len: 3 }
+                    Token {
+                        ttype: TokenType::SpecialOpcode(special_opcode(&s[..]).unwrap()),
+                        col: col,
+                        len: 3,
+                    }
                 } else if s.to_ascii_uppercase() == "DAT" {
-                    Token { ttype: TokenType::DataOpcode,
-                            col: col,
-                            len: 3 }
+                    Token {
+                        ttype: TokenType::DataOpcode,
+                        col: col,
+                        len: 3,
+                    }
                 } else if s.to_ascii_uppercase() == "DAF" {
-                    Token { ttype: TokenType::DataFillOpcode,
-                            col: col,
-                            len: 3 }
+                    Token {
+                        ttype: TokenType::DataFillOpcode,
+                        col: col,
+                        len: 3,
+                    }
                 } else {
                     // Treat it as a label
                     let len = s.len();
                     let label = match cpu.label_to_id.get(&s[..]).cloned() {
-                        Some(v) => {
-                            v
-                        },
+                        Some(v) => v,
                         None => {
                             let l = cpu.next_label_id;
                             cpu.next_label_id += 1;
                             let s_copy = s.clone();
                             cpu.label_to_id.insert(s, l);
                             cpu.id_to_label.insert(l, s_copy);
-                            let err = ParsingError {line: line_no,
-                                                    col: col,
-                                                    len: len,
-                                                    global: false,
-                                                    etype: ParsingErrorType::UnknownLabel(l)};
+                            let err = ParsingError {
+                                line: line_no,
+                                col: col,
+                                len: len,
+                                global: false,
+                                etype: ParsingErrorType::UnknownLabel(l),
+                            };
 
 
                             cpu.label_first_line_error.insert(l, err);
                             l
-                        },
+                        }
                     };
 
-                    Token { ttype: TokenType::Label(label as u16),
-                            col: col,
-                            len: len }
+                    Token {
+                        ttype: TokenType::Label(label as u16),
+                        col: col,
+                        len: len,
+                    }
                 }
             }
         };
@@ -570,8 +653,12 @@ fn process_canon(tokens: &Vec<Token>, prio: usize) -> (Vec<Token>, bool) {
     let mut i = 0;
     while i < tokens.len() {
         if prio == 1 && i + 2 < tokens.len() {
-            let token = match (tokens[i].ttype.clone(), tokens[i + 1].ttype.clone(), tokens[i + 2].ttype.clone()) {
-                (TokenType::NumericLiteral(v1), TokenType::Addition, TokenType::NumericLiteral(v2)) => {
+            let token = match (tokens[i].ttype.clone(),
+                               tokens[i + 1].ttype.clone(),
+                               tokens[i + 2].ttype.clone()) {
+                (TokenType::NumericLiteral(v1),
+                 TokenType::Addition,
+                 TokenType::NumericLiteral(v2)) => {
                     let token = Token {
                         ttype: TokenType::NumericLiteral(v1.wrapping_add(v2)),
                         col: tokens[i].col,
@@ -580,8 +667,10 @@ fn process_canon(tokens: &Vec<Token>, prio: usize) -> (Vec<Token>, bool) {
                     i += 3;
                     changed = true;
                     token
-                },
-                (TokenType::NumericLiteral(v1), TokenType::Subtraction, TokenType::NumericLiteral(v2)) => {
+                }
+                (TokenType::NumericLiteral(v1),
+                 TokenType::Subtraction,
+                 TokenType::NumericLiteral(v2)) => {
                     let token = Token {
                         ttype: TokenType::NumericLiteral(v1.wrapping_sub(v2)),
                         col: tokens[i].col,
@@ -590,17 +679,21 @@ fn process_canon(tokens: &Vec<Token>, prio: usize) -> (Vec<Token>, bool) {
                     i += 3;
                     changed = true;
                     token
-                },
+                }
                 _ => {
                     let token = tokens[i].clone();
                     i += 1;
                     token
-                },
+                }
             };
             new_tokens.push(token);
         } else if prio == 2 && i + 2 < tokens.len() {
-            let token = match (tokens[i].ttype.clone(), tokens[i + 1].ttype.clone(), tokens[i + 2].ttype.clone()) {
-                (TokenType::NumericLiteral(v1), TokenType::Multiplication, TokenType::NumericLiteral(v2)) => {
+            let token = match (tokens[i].ttype.clone(),
+                               tokens[i + 1].ttype.clone(),
+                               tokens[i + 2].ttype.clone()) {
+                (TokenType::NumericLiteral(v1),
+                 TokenType::Multiplication,
+                 TokenType::NumericLiteral(v2)) => {
                     let token = Token {
                         ttype: TokenType::NumericLiteral(v1.wrapping_mul(v2)),
                         col: tokens[i].col,
@@ -609,8 +702,10 @@ fn process_canon(tokens: &Vec<Token>, prio: usize) -> (Vec<Token>, bool) {
                     i += 3;
                     changed = true;
                     token
-                },
-                (TokenType::NumericLiteral(v1), TokenType::Division, TokenType::NumericLiteral(v2)) => {
+                }
+                (TokenType::NumericLiteral(v1),
+                 TokenType::Division,
+                 TokenType::NumericLiteral(v2)) => {
                     let token = Token {
                         ttype: TokenType::NumericLiteral(v1.wrapping_div(v2)),
                         col: tokens[i].col,
@@ -619,12 +714,12 @@ fn process_canon(tokens: &Vec<Token>, prio: usize) -> (Vec<Token>, bool) {
                     i += 3;
                     changed = true;
                     token
-                },
+                }
                 _ => {
                     let token = tokens[i].clone();
                     i += 1;
                     token
-                },
+                }
             };
             new_tokens.push(token);
         } else {
@@ -668,8 +763,12 @@ fn process_value(value: u16, allow_inline: bool) -> Result<ParsingInfo, ParsingE
     Ok(info)
 }
 
-fn parse_value(line_no: usize, tokens: &Vec<Token>, cur: &mut usize,
-               cpu: &mut PCPU, lvalue: bool) -> Result<ParsingInfo, ParsingError> {
+fn parse_value(line_no: usize,
+               tokens: &Vec<Token>,
+               cur: &mut usize,
+               cpu: &mut PCPU,
+               lvalue: bool)
+               -> Result<ParsingInfo, ParsingError> {
     let ttype = try!(fetch_token_type(line_no, tokens, *cur));
     match *ttype {
         TokenType::NumericLiteral(value) => {
@@ -684,27 +783,34 @@ fn parse_value(line_no: usize, tokens: &Vec<Token>, cur: &mut usize,
                                         etype: ParsingErrorType::IllegalLvalue});
             }
             */
+
+
             *cur += 1;
             // L-values are not allowed to have inlined values
             Ok(try!(process_value(value, !lvalue)))
-        },
+        }
         TokenType::Label(id) => {
             match cpu.labels.get(&id) {
                 Some(label) => {
                     *cur += 1;
                     Ok(try!(process_value(*label, !lvalue)))
-                },
+                }
                 None => {
                     *cur += 1;
-                    Ok(ParsingInfo{operand: 0x1f, extra_byte: Some(id), unassigned: true, offset: 0})
-                },
+                    Ok(ParsingInfo {
+                        operand: 0x1f,
+                        extra_byte: Some(id),
+                        unassigned: true,
+                        offset: 0,
+                    })
+                }
             }
         }
         TokenType::Registry(reg) => {
             *cur += 1;
             let info = ParsingInfo::new_single(reg as u16);
             Ok(info)
-        },
+        }
         TokenType::Pick => {
             *cur += 1;
             let ttype0 = try!(fetch_token_type(line_no, tokens, *cur));
@@ -715,63 +821,69 @@ fn parse_value(line_no: usize, tokens: &Vec<Token>, cur: &mut usize,
                     Ok(info)
                 }
                 _ => {
-                    let err = ParsingError{ line: line_no,
-                                            col: tokens[*cur].col,
-                                            len: tokens[*cur].len,
-                                            global: false,
-                                            etype: ParsingErrorType::ExpectingLiteral};
+                    let err = ParsingError {
+                        line: line_no,
+                        col: tokens[*cur].col,
+                        len: tokens[*cur].len,
+                        global: false,
+                        etype: ParsingErrorType::ExpectingLiteral,
+                    };
                     Err(err)
                 }
             }
-        },
+        }
         TokenType::Peek => {
             *cur += 1;
             let info = ParsingInfo::new_single(0x19);
             Ok(info)
-        },
+        }
         TokenType::Push => {
             if !lvalue {
-                let err = ParsingError{ line: line_no,
-                                        col: tokens[*cur].col,
-                                        len: tokens[*cur].len,
-                                        global: false,
-                                        etype: ParsingErrorType::IncorrectPushPop };
+                let err = ParsingError {
+                    line: line_no,
+                    col: tokens[*cur].col,
+                    len: tokens[*cur].len,
+                    global: false,
+                    etype: ParsingErrorType::IncorrectPushPop,
+                };
                 Err(err)
             } else {
                 *cur += 1;
                 let info = ParsingInfo::new_single(0x18);
                 Ok(info)
             }
-        },
+        }
         TokenType::Pop => {
             if lvalue {
-                let err = ParsingError{ line: line_no,
-                                        col: tokens[*cur].col,
-                                        len: tokens[*cur].len,
-                                        global: false,
-                                        etype: ParsingErrorType::IncorrectPushPop};
+                let err = ParsingError {
+                    line: line_no,
+                    col: tokens[*cur].col,
+                    len: tokens[*cur].len,
+                    global: false,
+                    etype: ParsingErrorType::IncorrectPushPop,
+                };
                 Err(err)
             } else {
                 *cur += 1;
                 let info = ParsingInfo::new_single(0x18);
                 Ok(info)
             }
-        },
+        }
         TokenType::SP => {
             *cur += 1;
             let info = ParsingInfo::new_single(0x1b);
             Ok(info)
-        },
+        }
         TokenType::PC => {
             *cur += 1;
             let info = ParsingInfo::new_single(0x1c);
             Ok(info)
-        },
+        }
         TokenType::EX => {
             *cur += 1;
             let info = ParsingInfo::new_single(0x1d);
             Ok(info)
-        },
+        }
         /**
           * This whole business needs refactoring. Every case is handled by
           * an explicit case, which is extremely verbose.
@@ -787,9 +899,9 @@ fn parse_value(line_no: usize, tokens: &Vec<Token>, cur: &mut usize,
                     match *ttype1 {
                         TokenType::RightBracket => {
                             *cur += 1;
-                            let info = ParsingInfo::new_single(0x08+reg);
+                            let info = ParsingInfo::new_single(0x08 + reg);
                             Ok(info)
-                        },
+                        }
                         TokenType::Addition => {
                             *cur += 1;
                             let ttype2 = try!(fetch_token_type(line_no, tokens, *cur));
@@ -802,17 +914,19 @@ fn parse_value(line_no: usize, tokens: &Vec<Token>, cur: &mut usize,
                                             *cur += 1;
                                             let info = ParsingInfo::new_extra(0x10 + reg, offset);
                                             Ok(info)
-                                        },
+                                        }
                                         _ => {
-                                            let err = ParsingError{ line: line_no,
-                                                                    col: tokens[*cur].col,
-                                                                    len: tokens[*cur].len,
-                                                                    global: false,
-                                                                    etype: ParsingErrorType::ExpectingRightBracket };
+                                            let err = ParsingError {
+                                                line: line_no,
+                                                col: tokens[*cur].col,
+                                                len: tokens[*cur].len,
+                                                global: false,
+                                                etype: ParsingErrorType::ExpectingRightBracket,
+                                            };
                                             Err(err)
                                         }
                                     }
-                                },
+                                }
                                 TokenType::Label(id) => {
                                     *cur += 1;
                                     let ttype1 = try!(fetch_token_type(line_no, tokens, *cur));
@@ -823,43 +937,54 @@ fn parse_value(line_no: usize, tokens: &Vec<Token>, cur: &mut usize,
                                                 Some(label) => {
                                                     let pos = *label;
                                                     ParsingInfo::new_extra(0x10 + reg, pos)
-                                                },
+                                                }
                                                 None => {
-                                                    ParsingInfo{operand: 0x10 + reg, extra_byte: Some(id), unassigned: true, offset: 0}
+                                                    ParsingInfo {
+                                                        operand: 0x10 + reg,
+                                                        extra_byte: Some(id),
+                                                        unassigned: true,
+                                                        offset: 0,
+                                                    }
                                                 }
                                             };
                                             Ok(info)
-                                        },
+                                        }
                                         _ => {
-                                            let err = ParsingError{ line: line_no,
-                                                                    col: tokens[*cur].col,
-                                                                    len: tokens[*cur].len,
-                                                                    global: false,
-                                                                    etype: ParsingErrorType::ExpectingRightBracket };
+                                            let err = ParsingError {
+                                                line: line_no,
+                                                col: tokens[*cur].col,
+                                                len: tokens[*cur].len,
+                                                global: false,
+                                                etype: ParsingErrorType::ExpectingRightBracket,
+                                            };
                                             Err(err)
                                         }
                                     }
-                                },
+                                }
                                 _ => {
-                                    let err = ParsingError{ line: line_no,
-                                                            col: tokens[*cur].col,
-                                                            len: tokens[*cur].len,
-                                                            global: false,
-                                                            etype: ParsingErrorType::ExpectingLiteral };
+                                    let err = ParsingError {
+                                        line: line_no,
+                                        col: tokens[*cur].col,
+                                        len: tokens[*cur].len,
+                                        global: false,
+                                        etype: ParsingErrorType::ExpectingLiteral,
+                                    };
                                     Err(err)
                                 }
                             }
-                        },
+                        }
                         _ => {
-                            let err = ParsingError{ line: line_no,
-                                                    col: tokens[*cur].col,
-                                                    len: tokens[*cur].len,
-                                                    global: false,
-                                                    etype: ParsingErrorType::ExpectingRightBracket };
+                            let err = ParsingError {
+                                line: line_no,
+                                col: tokens[*cur].col,
+                                len: tokens[*cur].len,
+                                global: false,
+                                etype: ParsingErrorType::ExpectingRightBracket,
+                            };
                             Err(err)
                         }
                     }
-                },
+                }
                 TokenType::NumericLiteral(v0) => {
                     *cur += 1;
                     let ttype1 = try!(fetch_token_type(line_no, tokens, *cur));
@@ -868,7 +993,7 @@ fn parse_value(line_no: usize, tokens: &Vec<Token>, cur: &mut usize,
                             *cur += 1;
                             let info = ParsingInfo::new_extra(0x1e, v0);
                             Ok(info)
-                        },
+                        }
                         TokenType::Addition => {
                             *cur += 1;
                             let ttype2 = try!(fetch_token_type(line_no, tokens, *cur));
@@ -881,17 +1006,19 @@ fn parse_value(line_no: usize, tokens: &Vec<Token>, cur: &mut usize,
                                             *cur += 1;
                                             let info = ParsingInfo::new_extra(0x10 + reg, v0);
                                             Ok(info)
-                                        },
+                                        }
                                         _ => {
-                                            let err = ParsingError{ line: line_no,
-                                                                    col: tokens[*cur].col,
-                                                                    len: tokens[*cur].len,
-                                                                    global: false,
-                                                                    etype: ParsingErrorType::ExpectingRightBracket };
+                                            let err = ParsingError {
+                                                line: line_no,
+                                                col: tokens[*cur].col,
+                                                len: tokens[*cur].len,
+                                                global: false,
+                                                etype: ParsingErrorType::ExpectingRightBracket,
+                                            };
                                             Err(err)
                                         }
                                     }
-                                },
+                                }
                                 TokenType::Label(id) => {
                                     *cur += 1;
                                     let ttype1 = try!(fetch_token_type(line_no, tokens, *cur));
@@ -900,45 +1027,58 @@ fn parse_value(line_no: usize, tokens: &Vec<Token>, cur: &mut usize,
                                             *cur += 1;
                                             let info = match cpu.labels.get(&id) {
                                                 Some(label) => {
-                                                    let pos = (((*label as usize) + (v0 as usize)) % MEMORY_SIZE) as u16;
+                                                    let pos = (((*label as usize) + (v0 as usize)) %
+                                                               MEMORY_SIZE) as
+                                                              u16;
                                                     ParsingInfo::new_extra(0x1e, pos)
-                                                },
+                                                }
                                                 None => {
-                                                    ParsingInfo{operand: 0x1e, extra_byte: Some(id), unassigned: true, offset: v0}
+                                                    ParsingInfo {
+                                                        operand: 0x1e,
+                                                        extra_byte: Some(id),
+                                                        unassigned: true,
+                                                        offset: v0,
+                                                    }
                                                 }
                                             };
                                             Ok(info)
-                                        },
+                                        }
                                         _ => {
-                                            let err = ParsingError{ line: line_no,
-                                                                    col: tokens[*cur].col,
-                                                                    len: tokens[*cur].len,
-                                                                    global: false,
-                                                                    etype: ParsingErrorType::ExpectingRightBracket };
+                                            let err = ParsingError {
+                                                line: line_no,
+                                                col: tokens[*cur].col,
+                                                len: tokens[*cur].len,
+                                                global: false,
+                                                etype: ParsingErrorType::ExpectingRightBracket,
+                                            };
                                             Err(err)
                                         }
                                     }
-                                },
+                                }
                                 _ => {
-                                    let err = ParsingError{ line: line_no,
-                                                            col: tokens[*cur].col,
-                                                            len: tokens[*cur].len,
-                                                            global: false,
-                                                            etype: ParsingErrorType::ExpectingLiteral };
+                                    let err = ParsingError {
+                                        line: line_no,
+                                        col: tokens[*cur].col,
+                                        len: tokens[*cur].len,
+                                        global: false,
+                                        etype: ParsingErrorType::ExpectingLiteral,
+                                    };
                                     Err(err)
                                 }
                             }
-                        },
+                        }
                         _ => {
-                            let err = ParsingError{ line: line_no,
-                                                    col: tokens[*cur].col,
-                                                    len: tokens[*cur].len,
-                                                    global: false,
-                                                    etype: ParsingErrorType::ExpectingRightBracket };
+                            let err = ParsingError {
+                                line: line_no,
+                                col: tokens[*cur].col,
+                                len: tokens[*cur].len,
+                                global: false,
+                                etype: ParsingErrorType::ExpectingRightBracket,
+                            };
                             Err(err)
                         }
                     }
-                },
+                }
                 TokenType::Label(id) => {
                     *cur += 1;
                     let ttype1 = try!(fetch_token_type(line_no, tokens, *cur));
@@ -946,15 +1086,18 @@ fn parse_value(line_no: usize, tokens: &Vec<Token>, cur: &mut usize,
                         TokenType::RightBracket => {
                             *cur += 1;
                             let info = match cpu.labels.get(&id) {
-                                Some(label) => {
-                                    ParsingInfo::new_extra(0x1e, *label)
-                                },
+                                Some(label) => ParsingInfo::new_extra(0x1e, *label),
                                 None => {
-                                    ParsingInfo{operand: 0x1e, extra_byte: Some(id), unassigned: true, offset: 0}
-                                },
+                                    ParsingInfo {
+                                        operand: 0x1e,
+                                        extra_byte: Some(id),
+                                        unassigned: true,
+                                        offset: 0,
+                                    }
+                                }
                             };
                             Ok(info)
-                        },
+                        }
                         TokenType::Addition => {
                             *cur += 1;
                             let ttype2 = try!(fetch_token_type(line_no, tokens, *cur));
@@ -968,25 +1111,35 @@ fn parse_value(line_no: usize, tokens: &Vec<Token>, cur: &mut usize,
 
                                             let info = match cpu.labels.get(&id) {
                                                 Some(label) => {
-                                                    let pos = (((*label as usize) + (offset as usize)) % MEMORY_SIZE) as u16;
+                                                    let pos = (((*label as usize) +
+                                                                (offset as usize)) %
+                                                               MEMORY_SIZE) as
+                                                              u16;
                                                     ParsingInfo::new_extra(0x1e, pos)
-                                                },
+                                                }
                                                 None => {
-                                                    ParsingInfo{operand: 0x1e, extra_byte: Some(id), unassigned: true, offset: offset}
+                                                    ParsingInfo {
+                                                        operand: 0x1e,
+                                                        extra_byte: Some(id),
+                                                        unassigned: true,
+                                                        offset: offset,
+                                                    }
                                                 }
                                             };
                                             Ok(info)
-                                        },
+                                        }
                                         _ => {
-                                            let err = ParsingError{ line: line_no,
-                                                                    col: tokens[*cur].col,
-                                                                    len: tokens[*cur].len,
-                                                                    global: false,
-                                                                    etype: ParsingErrorType::ExpectingRightBracket };
+                                            let err = ParsingError {
+                                                line: line_no,
+                                                col: tokens[*cur].col,
+                                                len: tokens[*cur].len,
+                                                global: false,
+                                                etype: ParsingErrorType::ExpectingRightBracket,
+                                            };
                                             Err(err)
                                         }
                                     }
-                                },
+                                }
                                 TokenType::Registry(reg) => {
                                     *cur += 1;
                                     let ttype1 = try!(fetch_token_type(line_no, tokens, *cur));
@@ -996,71 +1149,92 @@ fn parse_value(line_no: usize, tokens: &Vec<Token>, cur: &mut usize,
                                             let info = match cpu.labels.get(&id) {
                                                 Some(label) => {
                                                     ParsingInfo::new_extra(0x10 + reg, *label)
-                                                },
+                                                }
                                                 None => {
-                                                    ParsingInfo{operand: 0x10 + reg, extra_byte: Some(id), unassigned: true, offset: 0}
-                                                },
+                                                    ParsingInfo {
+                                                        operand: 0x10 + reg,
+                                                        extra_byte: Some(id),
+                                                        unassigned: true,
+                                                        offset: 0,
+                                                    }
+                                                }
                                             };
                                             Ok(info)
-                                        },
+                                        }
                                         _ => {
-                                            let err = ParsingError{ line: line_no,
-                                                                    col: tokens[*cur].col,
-                                                                    len: tokens[*cur].len,
-                                                                    global: false,
-                                                                    etype: ParsingErrorType::ExpectingRightBracket };
+                                            let err = ParsingError {
+                                                line: line_no,
+                                                col: tokens[*cur].col,
+                                                len: tokens[*cur].len,
+                                                global: false,
+                                                etype: ParsingErrorType::ExpectingRightBracket,
+                                            };
                                             Err(err)
                                         }
                                     }
-                                },
+                                }
                                 _ => {
-                                    let err = ParsingError{ line: line_no,
-                                                            col: tokens[*cur].col,
-                                                            len: tokens[*cur].len,
-                                                            global: false,
-                                                            etype: ParsingErrorType::ExpectingLiteral };
+                                    let err = ParsingError {
+                                        line: line_no,
+                                        col: tokens[*cur].col,
+                                        len: tokens[*cur].len,
+                                        global: false,
+                                        etype: ParsingErrorType::ExpectingLiteral,
+                                    };
                                     Err(err)
                                 }
                             }
-                        },
+                        }
                         _ => {
-                            let err = ParsingError{line: line_no, col: tokens[*cur].col,
-                                                   len: tokens[*cur].len,
-                                                   global: false,
-                                                   etype: ParsingErrorType::ExpectingRightBracket };
+                            let err = ParsingError {
+                                line: line_no,
+                                col: tokens[*cur].col,
+                                len: tokens[*cur].len,
+                                global: false,
+                                etype: ParsingErrorType::ExpectingRightBracket,
+                            };
                             Err(err)
                         }
                     }
-                },
+                }
                 _ => {
-                    let err = ParsingError{ line: line_no,
-                                            col: tokens[*cur].col,
-                                            len: tokens[*cur].len,
-                                            global: false,
-                                            etype: ParsingErrorType::ExpectingLiteral};
+                    let err = ParsingError {
+                        line: line_no,
+                        col: tokens[*cur].col,
+                        len: tokens[*cur].len,
+                        global: false,
+                        etype: ParsingErrorType::ExpectingLiteral,
+                    };
                     Err(err)
-                },
+                }
             }
         }
         _ => {
-            let err = ParsingError { line: line_no,
-                                     col: tokens[*cur].col,
-                                     len: tokens[*cur].len,
-                                     global: false,
-                                     etype: ParsingErrorType::ExpectingOperand};
+            let err = ParsingError {
+                line: line_no,
+                col: tokens[*cur].col,
+                len: tokens[*cur].len,
+                global: false,
+                etype: ParsingErrorType::ExpectingOperand,
+            };
             Err(err)
-        },
+        }
     }
     //Ok(ParsingInfo::new())
 }
 
-fn fetch_token_type(line_no: usize, tokens: &Vec<Token>, cur: usize) -> Result<&TokenType, ParsingError> {
+fn fetch_token_type(line_no: usize,
+                    tokens: &Vec<Token>,
+                    cur: usize)
+                    -> Result<&TokenType, ParsingError> {
     if cur >= tokens.len() {
-        let err = ParsingError { line: line_no,
-                                 col: tokens[tokens.len() - 1].col,
-                                 len: tokens[tokens.len() - 1].len,
-                                 global: false,
-                                 etype: ParsingErrorType::EndOfTokens };
+        let err = ParsingError {
+            line: line_no,
+            col: tokens[tokens.len() - 1].col,
+            len: tokens[tokens.len() - 1].len,
+            global: false,
+            etype: ParsingErrorType::EndOfTokens,
+        };
         return Err(err);
     }
 
@@ -1068,36 +1242,44 @@ fn fetch_token_type(line_no: usize, tokens: &Vec<Token>, cur: usize) -> Result<&
     return Ok(ttype);
 }
 
-fn check_comma(line_no: usize, tokens: &Vec<Token>,
-               cur: &mut usize) -> Result<(), ParsingError> {
+fn check_comma(line_no: usize, tokens: &Vec<Token>, cur: &mut usize) -> Result<(), ParsingError> {
     let ttype = try!(fetch_token_type(line_no, tokens, *cur));
     match *ttype {
         TokenType::Comma => {
             *cur += 1;
             Ok(())
-        },
+        }
         _ => {
-            let err = ParsingError { line: line_no,
-                                     col: tokens[*cur].col,
-                                     len: tokens[*cur].len,
-                                     global: false,
-                                     etype: ParsingErrorType::ExpectingComma };
+            let err = ParsingError {
+                line: line_no,
+                col: tokens[*cur].col,
+                len: tokens[*cur].len,
+                global: false,
+                etype: ParsingErrorType::ExpectingComma,
+            };
             Err(err)
         }
     }
 }
 
-fn check_end_of_line(line_no: usize, tokens: &Vec<Token>,
-                     cur: &mut usize) -> Result<(), ParsingError> {
+fn check_end_of_line(line_no: usize,
+                     tokens: &Vec<Token>,
+                     cur: &mut usize)
+                     -> Result<(), ParsingError> {
     if tokens.len() <= *cur {
         Ok(())
     } else {
-        println!("{} {} {}", tokens[tokens.len() - 1].col, tokens[*cur].col, tokens[tokens.len()-1].len);
-        let err = ParsingError { line: line_no,
-                                 col: tokens[*cur].col,
-                                 len: tokens[tokens.len()-1].col - tokens[*cur].col + tokens[tokens.len()-1].len,
-                                 global: false,
-                                 etype: ParsingErrorType::ExtraTokens };
+        println!("{} {} {}",
+                 tokens[tokens.len() - 1].col,
+                 tokens[*cur].col,
+                 tokens[tokens.len() - 1].len);
+        let err = ParsingError {
+            line: line_no,
+            col: tokens[*cur].col,
+            len: tokens[tokens.len() - 1].col - tokens[*cur].col + tokens[tokens.len() - 1].len,
+            global: false,
+            etype: ParsingErrorType::ExtraTokens,
+        };
         Err(err)
     }
 }
@@ -1105,7 +1287,8 @@ fn check_end_of_line(line_no: usize, tokens: &Vec<Token>,
 fn parse_basic_opcode(line_no: usize,
                       tokens: &Vec<Token>,
                       cur: &mut usize,
-                      cpu: &mut PCPU) -> Result<(), ParsingError> {
+                      cpu: &mut PCPU)
+                      -> Result<(), ParsingError> {
     let ttype = try!(fetch_token_type(line_no, tokens, *cur));
     match ttype {
         &TokenType::BasicOpcode(opcode) => {
@@ -1127,25 +1310,33 @@ fn parse_basic_opcode(line_no: usize,
                 Some(byte) => {
                     cpu.mem[cpu.pc as usize] = byte;
                     if a.unassigned {
-                        let ul = UnassignedLabel{addr: cpu.pc, label: byte, offset: a.offset};
+                        let ul = UnassignedLabel {
+                            addr: cpu.pc,
+                            label: byte,
+                            offset: a.offset,
+                        };
                         cpu.unassigned_addresses.push(ul);
                     }
 
                     cpu.pc += 1;
-                },
-                None => {},
+                }
+                None => {}
             }
 
             match b.extra_byte {
                 Some(byte) => {
                     cpu.mem[cpu.pc as usize] = byte;
                     if b.unassigned {
-                        let ul = UnassignedLabel{addr: cpu.pc, label: byte, offset: b.offset};
+                        let ul = UnassignedLabel {
+                            addr: cpu.pc,
+                            label: byte,
+                            offset: b.offset,
+                        };
                         cpu.unassigned_addresses.push(ul);
                     }
                     cpu.pc += 1;
-                },
-                None => {},
+                }
+                None => {}
             }
             //let a = parse_value(tokens, &mut cur);
         }
@@ -1160,7 +1351,8 @@ fn parse_basic_opcode(line_no: usize,
 fn parse_special_opcode(line_no: usize,
                         tokens: &Vec<Token>,
                         cur: &mut usize,
-                        cpu: &mut PCPU) -> Result<(), ParsingError> {
+                        cpu: &mut PCPU)
+                        -> Result<(), ParsingError> {
     let ttype = try!(fetch_token_type(line_no, tokens, *cur));
     match ttype {
         &TokenType::SpecialOpcode(opcode) => {
@@ -1179,12 +1371,16 @@ fn parse_special_opcode(line_no: usize,
                 Some(byte) => {
                     cpu.mem[cpu.pc as usize] = byte;
                     if a.unassigned {
-                        let ul = UnassignedLabel{addr: cpu.pc, label: byte, offset: a.offset};
+                        let ul = UnassignedLabel {
+                            addr: cpu.pc,
+                            label: byte,
+                            offset: a.offset,
+                        };
                         cpu.unassigned_addresses.push(ul);
                     }
                     cpu.pc += 1;
-                },
-                None => {},
+                }
+                None => {}
             }
         }
         _ => {
@@ -1198,7 +1394,8 @@ fn parse_special_opcode(line_no: usize,
 fn parse_data_opcode(line_no: usize,
                      tokens: &Vec<Token>,
                      cur: &mut usize,
-                     cpu: &mut PCPU) -> Result<ParsingInfo, ParsingError> {
+                     cpu: &mut PCPU)
+                     -> Result<ParsingInfo, ParsingError> {
 
     // Eat the DAT opcode
     *cur += 1;
@@ -1220,7 +1417,7 @@ fn parse_data_opcode(line_no: usize,
                 *cur += 1;
                 cpu.mem[cpu.pc as usize] = value;
                 cpu.pc += 1;
-            },
+            }
             &TokenType::StringLiteral(id) => {
                 *cur += 1;
                 for c in cpu.string_literals[id as usize].chars() {
@@ -1229,11 +1426,13 @@ fn parse_data_opcode(line_no: usize,
                 }
             }
             _ => {
-                let err = ParsingError { line: line_no,
-                                         col: tokens[*cur].col,
-                                         len: tokens[*cur].len,
-                                         global: false,
-                                         etype: ParsingErrorType::ExpectingLiteral };
+                let err = ParsingError {
+                    line: line_no,
+                    col: tokens[*cur].col,
+                    len: tokens[*cur].len,
+                    global: false,
+                    etype: ParsingErrorType::ExpectingLiteral,
+                };
                 return Err(err);
             }
         }
@@ -1242,9 +1441,10 @@ fn parse_data_opcode(line_no: usize,
 }
 
 fn parse_data_fill_opcode(line_no: usize,
-                     tokens: &Vec<Token>,
-                     cur: &mut usize,
-                     cpu: &mut PCPU) -> Result<ParsingInfo, ParsingError> {
+                          tokens: &Vec<Token>,
+                          cur: &mut usize,
+                          cpu: &mut PCPU)
+                          -> Result<ParsingInfo, ParsingError> {
 
     // Eat the DAF opcode
     *cur += 1;
@@ -1254,15 +1454,17 @@ fn parse_data_fill_opcode(line_no: usize,
         &TokenType::NumericLiteral(value) => {
             *cur += 1;
             value
-        },
+        }
         _ => {
-            let err = ParsingError { line: line_no,
-                                     col: tokens[*cur].col,
-                                     len: tokens[*cur].len,
-                                     global: false,
-                                     etype: ParsingErrorType::ExpectingLiteral };
+            let err = ParsingError {
+                line: line_no,
+                col: tokens[*cur].col,
+                len: tokens[*cur].len,
+                global: false,
+                etype: ParsingErrorType::ExpectingLiteral,
+            };
             return Err(err);
-        },
+        }
     };
 
     try!(check_comma(line_no, tokens, cur));
@@ -1272,15 +1474,17 @@ fn parse_data_fill_opcode(line_no: usize,
         &TokenType::NumericLiteral(value) => {
             *cur += 1;
             value
-        },
+        }
         _ => {
-            let err = ParsingError { line: line_no,
-                                     col: tokens[*cur].col,
-                                     len: tokens[*cur].len,
-                                     global: false,
-                                     etype: ParsingErrorType::ExpectingLiteral };
+            let err = ParsingError {
+                line: line_no,
+                col: tokens[*cur].col,
+                len: tokens[*cur].len,
+                global: false,
+                etype: ParsingErrorType::ExpectingLiteral,
+            };
             return Err(err);
-        },
+        }
     };
 
     try!(check_end_of_line(line_no, tokens, cur));
@@ -1294,7 +1498,11 @@ fn parse_data_fill_opcode(line_no: usize,
     Ok(ParsingInfo::new())
 }
 
-fn parse_line(line_no: usize, tokens: &Vec<Token>, cpu: &mut PCPU, cur: &mut usize) -> Result<(), ParsingError> {
+fn parse_line(line_no: usize,
+              tokens: &Vec<Token>,
+              cpu: &mut PCPU,
+              cur: &mut usize)
+              -> Result<(), ParsingError> {
     if *cur >= tokens.len() {
         return Ok(());
     }
@@ -1302,19 +1510,19 @@ fn parse_line(line_no: usize, tokens: &Vec<Token>, cpu: &mut PCPU, cur: &mut usi
         &TokenType::BasicOpcode(_) => {
             try!(parse_basic_opcode(line_no, tokens, cur, cpu));
             Ok(())
-        },
+        }
         &TokenType::SpecialOpcode(_) => {
             try!(parse_special_opcode(line_no, tokens, cur, cpu));
             Ok(())
-        },
+        }
         &TokenType::DataOpcode => {
             try!(parse_data_opcode(line_no, tokens, cur, cpu));
             Ok(())
-        },
+        }
         &TokenType::DataFillOpcode => {
             try!(parse_data_fill_opcode(line_no, tokens, cur, cpu));
             Ok(())
-        },
+        }
         &TokenType::Colon => {
             *cur += 1;
             match try!(fetch_token_type(line_no, tokens, *cur)) {
@@ -1327,25 +1535,29 @@ fn parse_line(line_no: usize, tokens: &Vec<Token>, cpu: &mut PCPU, cur: &mut usi
                     // Allow more parsing after a label
                     *cur += 1;
                     Ok(try!(parse_line(line_no, tokens, cpu, cur)))
-                },
+                }
                 _ => {
-                    let err = ParsingError { line: line_no,
-                                             col: tokens[*cur].col,
-                                             len: tokens[*cur].len,
-                                             global: false,
-                                             etype: ParsingErrorType::ExpectingLabel };
+                    let err = ParsingError {
+                        line: line_no,
+                        col: tokens[*cur].col,
+                        len: tokens[*cur].len,
+                        global: false,
+                        etype: ParsingErrorType::ExpectingLabel,
+                    };
                     Err(err)
                 }
             }
-        },
+        }
         _ => {
-            let err = ParsingError { line: line_no,
-                                     col: tokens[*cur].col,
-                                     len: tokens[*cur].len,
-                                     global: false,
-                                     etype: ParsingErrorType::IllegalLineStart };
+            let err = ParsingError {
+                line: line_no,
+                col: tokens[*cur].col,
+                len: tokens[*cur].len,
+                global: false,
+                etype: ParsingErrorType::IllegalLineStart,
+            };
             Err(err)
-        },
+        }
     }
 }
 
@@ -1376,7 +1588,7 @@ pub fn parse(lines: &Vec<String>, cpu: &mut PCPU) -> Result<(), ParsingError> {
         match cpu.labels.get(&ul.label) {
             Some(v) => {
                 cpu.mem[ul.addr as usize] = ul.offset + *v;
-            },
+            }
             None => {
                 let err = match cpu.label_first_line_error.get(&ul.label) {
                     Some(s) => *s,
@@ -1394,9 +1606,12 @@ pub fn parse(lines: &Vec<String>, cpu: &mut PCPU) -> Result<(), ParsingError> {
 pub fn print_parse_error(cpu: &PCPU, line: &str, err: ParsingError) {
     println!("Parse failed");
     if err.global {
-        println!("\x1b[1;31merror:\x1b[1;37m {}\x1b[0m", format_error(&err.etype, cpu));
+        println!("\x1b[1;31merror:\x1b[1;37m {}\x1b[0m",
+                 format_error(&err.etype, cpu));
     } else {
-        println!(":{} \x1b[1;31merror:\x1b[1;37m {}\x1b[0m", err.line+1, format_error(&err.etype, cpu));
+        println!(":{} \x1b[1;31merror:\x1b[1;37m {}\x1b[0m",
+                 err.line + 1,
+                 format_error(&err.etype, cpu));
         println!("{}", line);
         for _ in 0..err.col {
             print!(" ");

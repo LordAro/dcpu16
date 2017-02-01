@@ -22,11 +22,11 @@ fn main() {
     opts.optflag("v", "version", "print version");
     opts.optflag("h", "help", "print this help menu");
     let matches = match opts.parse(&args[1..]) {
-        Ok(m) => { m },
+        Ok(m) => m,
         Err(why) => {
             println!("{}", why);
             exit(1);
-        },
+        }
     };
 
     if matches.opt_present("h") {
@@ -51,9 +51,11 @@ fn main() {
     let path = Path::new(filename);
     let mut file = match File::open(&path) {
         Err(why) => {
-            println!("Could not open file {}: {}", path.display(), why.description());
+            println!("Could not open file {}: {}",
+                     path.display(),
+                     why.description());
             exit(1);
-        },
+        }
         Ok(f) => f,
     };
 
@@ -78,7 +80,7 @@ fn main() {
         Err(why) => {
             println!("Could not read contents of file: {}", why);
             exit(1);
-        },
+        }
     }
 
     loop {

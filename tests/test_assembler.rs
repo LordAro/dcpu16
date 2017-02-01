@@ -1,4 +1,4 @@
-use dcpu16::assembler::{PCPU,parse};
+use dcpu16::assembler::{PCPU, parse};
 
 fn test_case(ll: &[&str], mem: &[u16]) {
     let mut lines: Vec<String> = Vec::new();
@@ -10,8 +10,13 @@ fn test_case(ll: &[&str], mem: &[u16]) {
     let mut i = 0;
     for m in mem {
         //assert_eq!(cpu.mem[i], *m);
-        assert!(cpu.mem[i] == *m, "word addr {}: 0x{:04x} != 0x{:04x} ({:?} / {:?})",
-                                  i, cpu.mem[i], *m, ll, mem);
+        assert!(cpu.mem[i] == *m,
+                "word addr {}: 0x{:04x} != 0x{:04x} ({:?} / {:?})",
+                i,
+                cpu.mem[i],
+                *m,
+                ll,
+                mem);
         i += 1;
     }
     // TODO: Make sure the rest of the memory is empty
@@ -23,7 +28,8 @@ fn test_assembler_data_literals() {
     test_case(&["DAT 0x1234"], &[0x1234]);
     test_case(&["DAT 1234"], &[1234]);
     test_case(&["DAT 0, 1, 2"], &[0, 1, 2]);
-    test_case(&["DAT \"Hello\""], &[0x0048, 0x0065, 0x006c, 0x006c, 0x006f]);
+    test_case(&["DAT \"Hello\""],
+              &[0x0048, 0x0065, 0x006c, 0x006c, 0x006f]);
     test_case(&["DAT \"A\nB\", 0x1000"], &[0x0041, 0x000a, 0x0042, 0x1000]);
     test_case(&["DAT \"\t\n\""], &[0x0009, 0x000a]);
     test_case(&["DAT \"A; B\""], &[0x0041, 0x003b, 0x0020, 0x0042]); // not a comment
@@ -142,15 +148,9 @@ fn test_assembler_registry_literal_addition() {
 
 #[test]
 fn test_assembler_label_registry_addition() {
-    test_case(&["DAT 1",
-                ":label",
-                "DAT 2",
-                "SET A, [I + label]"],
+    test_case(&["DAT 1", ":label", "DAT 2", "SET A, [I + label]"],
               &[1, 2, 0x5801, 0x0001]);
-    test_case(&["DAT 1",
-                ":label",
-                "DAT 2",
-                "SET A, [label + I]"],
+    test_case(&["DAT 1", ":label", "DAT 2", "SET A, [label + I]"],
               &[1, 2, 0x5801, 0x0001]);
     test_case(&["DAT 1",
                 ":label",
@@ -163,20 +163,11 @@ fn test_assembler_label_registry_addition() {
 
 #[test]
 fn test_assembler_label_literal_addition() {
-    test_case(&["DAT 1",
-                ":label",
-                "DAT 2",
-                "SET A, [label + 4]"],
+    test_case(&["DAT 1", ":label", "DAT 2", "SET A, [label + 4]"],
               &[1, 2, 0x7801, 0x0005]);
-    test_case(&["DAT 1",
-                ":label",
-                "DAT 2",
-                "SET A, [2 + label]"],
+    test_case(&["DAT 1", ":label", "DAT 2", "SET A, [2 + label]"],
               &[1, 2, 0x7801, 0x0003]);
-    test_case(&["DAT 1",
-                ":label",
-                "DAT 2, 3, 4",
-                "SET [label + 1], [label + 2]"],
+    test_case(&["DAT 1", ":label", "DAT 2, 3, 4", "SET [label + 1], [label + 2]"],
               &[1, 2, 3, 4, 0x7bc1, 0x0003, 0x0002]);
 }
 
@@ -222,30 +213,23 @@ fn test_assembler_simple_labels() {
     //test_case(&["DAT 1", ":mylabel", "SET A, mylabel"], &[0x0001, 0x7c01, 0x0001]);
     test_case(&["DAT 1", ":mylabel", "SET A, mylabel"], &[0x0001, 0x8801]);
     test_case(&[":begin DAT \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"", "SET A, begin"],
-              &[0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078,
-                0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078,
-                0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078,
-                0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078,
-                0x8401]);
+              &[0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078,
+                0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078,
+                0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078,
+                0x0078, 0x0078, 0x8401]);
     test_case(&["DAT \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"", ":self SET A, self"],
-              &[0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078,
-                0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078,
-                0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078,
-                0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078,
-                0x7c01, 0x0020]);
+              &[0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078,
+                0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078,
+                0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078, 0x0078,
+                0x0078, 0x0078, 0x7c01, 0x0020]);
 }
 
 #[test]
 fn test_assembler_future_labels() {
-    test_case(&["SET A, future",
-                  ":future",
-                  "SET B, 0"],
-                &[0x7c01, 0x0002, 0x8421]);
-    test_case(&["SET A, future",
-                  "SET B, future",
-                  ":future",
-                  "SET B, 0"],
-                &[0x7c01, 0x0004, 0x7c21, 0x0004, 0x8421]);
+    test_case(&["SET A, future", ":future", "SET B, 0"],
+              &[0x7c01, 0x0002, 0x8421]);
+    test_case(&["SET A, future", "SET B, future", ":future", "SET B, 0"],
+              &[0x7c01, 0x0004, 0x7c21, 0x0004, 0x8421]);
 }
 
 // TODO: Expect parse error

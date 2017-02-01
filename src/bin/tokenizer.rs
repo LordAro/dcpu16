@@ -17,15 +17,17 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let program = args[0].clone();
 
-    opts.optflag("c", "canonize", "resolves arithmetic literals before printing tokens");
+    opts.optflag("c",
+                 "canonize",
+                 "resolves arithmetic literals before printing tokens");
     opts.optflag("v", "version", "print version");
     opts.optflag("h", "help", "print this help menu");
     let matches = match opts.parse(&args[1..]) {
-        Ok(m) => { m },
+        Ok(m) => m,
         Err(why) => {
             println!("{}", why);
             exit(1);
-        },
+        }
     };
 
     if matches.opt_present("h") {
@@ -53,13 +55,13 @@ fn main() {
         Err(why) => {
             println!("Could load file {}: {}", path.display(), why);
             exit(1);
-        },
+        }
         Ok(file) => file,
     };
     for line in BufReader::new(&file).lines() {
         match line {
-            Ok(s) => {lines.push(s.trim_matches(x).to_string())},
-            Err(_) => {},
+            Ok(s) => lines.push(s.trim_matches(x).to_string()),
+            Err(_) => {}
         }
     }
     let mut cpu = assembler::PCPU::new();
@@ -82,14 +84,14 @@ fn main() {
                 };
                 if new_tokens.len() > 0 {
                     for t in new_tokens.iter() {
-                        println!("{} \x1b[1;30m{}:{}\x1b[0m", t.ttype, t.col, t.col+t.len);
+                        println!("{} \x1b[1;30m{}:{}\x1b[0m", t.ttype, t.col, t.col + t.len);
                     }
                     println!("");
                 }
-            },
+            }
             Err(err) => {
                 assembler::print_parse_error(&cpu, l, err);
-            },
+            }
         };
 
         line_no += 1;

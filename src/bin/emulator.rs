@@ -25,11 +25,11 @@ fn main() {
     opts.optflag("v", "version", "print version");
     opts.optflag("h", "help", "print this help menu");
     let matches = match opts.parse(&args[1..]) {
-        Ok(m) => { m },
+        Ok(m) => m,
         Err(why) => {
             println!("{}", why);
             exit(1);
-        },
+        }
     };
 
     if matches.opt_present("h") {
@@ -53,11 +53,11 @@ fn main() {
 
     let path = Path::new(filename);
     match cpu.load_from_binary_file(&path) {
-        Ok(()) => {},
+        Ok(()) => {}
         Err(why) => {
             println!("Could load file {}: {}", path.display(), why);
             exit(1);
-        },
+        }
     }
 
     // Connect hardware
@@ -68,6 +68,7 @@ fn main() {
     floppy.state = 1;
     cpu.devices.push(floppy);
     */
+
 
     let clock = DeviceClockGeneric::new();
     cpu.add_device(Box::new(clock));
@@ -81,7 +82,8 @@ fn main() {
             println!("::: {}", s);
             cpu.print();
         }
-    } else { // If printing is not on, then the CPU will run roughly at 100 kHz
+    } else {
+        // If printing is not on, then the CPU will run roughly at 100 kHz
         let cycles = dcpu::CYCLE_HZ / FPS;
         while !cpu.terminate {
             //let now = time::Instant::now();

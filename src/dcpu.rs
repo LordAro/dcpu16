@@ -143,56 +143,64 @@ impl DCPU {
 
     fn set(&mut self, identifier: usize, value: u16) {
         match identifier {
-            0x00 ... 0x07 => { self.reg[identifier] = value; },
-            0x08 ... 0x0f => {
+            0x00...0x07 => {
+                self.reg[identifier] = value;
+            }
+            0x08...0x0f => {
                 self.cycle += 1;
                 let pos = self.reg[(identifier - 0x08) as usize];
                 self.mem[pos as usize] = value;
-            },
-            0x10 ... 0x17 => {
+            }
+            0x10...0x17 => {
                 self.cycle += 1;
                 let pos = self.reg[(identifier - 0x10) as usize];
                 let offset = self.mem[self.pcplus(true) as usize];
                 self.mem[pos.wrapping_add(offset) as usize] = value;
-            },
+            }
             0x18 => {
                 self.sp = self.sp.wrapping_sub(1);
                 self.mem[self.sp as usize] = value;
-            },
+            }
             0x19 => {
                 self.mem[self.sp as usize] = value;
-            },
+            }
             0x1a => {
                 self.cycle += 1;
                 let pos = self.sp.wrapping_add(self.mem[self.pcplus(true) as usize]);
                 self.mem[pos as usize] = value;
-            },
-            0x1b => { self.sp = value; },
-            0x1c => { self.pc = value; },
-            0x1d => { self.ex = value; },
+            }
+            0x1b => {
+                self.sp = value;
+            }
+            0x1c => {
+                self.pc = value;
+            }
+            0x1d => {
+                self.ex = value;
+            }
             0x1e => {
                 self.cycle += 1;
                 let pos = self.mem[self.pcplus(true) as usize];
                 self.mem[pos as usize] = value;
             }
             // Instructions 0x1f - 0x3f are not possible (silently ignore)
-            _ => {},
+            _ => {}
         }
     }
 
     fn value(&mut self, identifier: usize, is_a: bool, movepc: bool) -> u16 {
         match identifier {
-            0x00 ... 0x07  => { self.reg[identifier as usize] },
-            0x08 ... 0x0f => {
+            0x00...0x07 => self.reg[identifier as usize],
+            0x08...0x0f => {
                 let pos = self.reg[(identifier - 0x08) as usize];
                 self.mem[pos as usize]
-            },
-            0x10 ... 0x17 => {
+            }
+            0x10...0x17 => {
                 self.cycle += 1;
                 let pos = self.reg[(identifier - 0x10) as usize];
                 let offset = self.mem[self.pcplus(movepc) as usize];
                 self.mem[pos.wrapping_add(offset) as usize]
-            },
+            }
             0x18 => {
                 if is_a {
                     let oldsp = self.sp;
@@ -202,32 +210,32 @@ impl DCPU {
                     self.sp = self.sp.wrapping_sub(1);
                     self.mem[self.sp as usize]
                 }
-            },
-            0x19 => { self.mem[self.sp as usize] },
+            }
+            0x19 => self.mem[self.sp as usize],
             0x1a => {
                 self.cycle += 1;
                 let pos = self.sp.wrapping_add(self.mem[self.pcplus(movepc) as usize]);
                 self.mem[pos as usize]
-            },
-            0x1b => { self.sp },
-            0x1c => { self.pc },
-            0x1d => { self.ex },
+            }
+            0x1b => self.sp,
+            0x1c => self.pc,
+            0x1d => self.ex,
             0x1e => {
                 self.cycle += 1;
                 let pos = self.mem[self.pcplus(movepc) as usize];
                 self.mem[pos as usize]
-            },
+            }
             0x1f => {
                 self.cycle += 1;
                 self.mem[self.pcplus(movepc) as usize]
-            },
+            }
             _ => {
                 if is_a && identifier >= 0x20 && identifier <= 0x3f {
                     ((0x10000 + identifier - 0x21) & 0xffff) as u16
                 } else {
                     0
                 }
-            },
+            }
         }
     }
 
@@ -284,12 +292,12 @@ impl DCPU {
                 0 => {
                     let spec_opcode = (word >> 5) & 0x1f;
                     self.process_special_opcode(spec_opcode, id_a);
-                },
+                }
                 SET => {
                     self.cycle += 1;
                     let v = self.value(id_a, true, true);
                     self.set(id_b, v);
-                },
+                }
                 ADD => {
                     self.cycle += 2;
                     // TODO: Use overflow_add
@@ -301,7 +309,7 @@ impl DCPU {
                         self.ex = 0;
                     }
                     self.set(id_b, (v & 0xffff) as u16); // & might not be needed
-                },
+                }
                 SUB => {
                     self.cycle += 2;
                     let a = self.value(id_a, true, true);
@@ -313,7 +321,7 @@ impl DCPU {
                     }
                     let v = b.wrapping_sub(a);
                     self.set(id_b, v);
-                },
+                }
                 MUL => {
                     self.cycle += 2;
                     let v = (self.value(id_a, true, true) as i32) *
@@ -324,7 +332,7 @@ impl DCPU {
                         self.ex = 0;
                     }
                     self.set(id_b, (v & 0xffff) as u16);
-                },
+                }
                 MLI => {
                     self.cycle += 2;
                     let v = (self.value_signed(id_a, true, true) as i32) *
@@ -335,7 +343,7 @@ impl DCPU {
                         self.ex = 0;
                     }
                     self.set(id_b, (v & 0xffff) as u16);
-                },
+                }
                 DIV => {
                     self.cycle += 3;
                     let a = self.value(id_a, true, true);
@@ -348,7 +356,7 @@ impl DCPU {
                         b / a
                     };
                     self.set(id_b, v);
-                },
+                }
                 DVI => {
                     self.cycle += 3;
                     let a = self.value_signed(id_a, true, true);
@@ -361,61 +369,53 @@ impl DCPU {
                         b / a
                     };
                     self.set(id_b, v as u16);
-                },
+                }
                 MOD => {
                     self.cycle += 3;
                     let a = self.value(id_a, true, true);
                     let b = self.value(id_b, false, false);
-                    let v = if a != 0 {
-                        b % a
-                    } else {
-                        0
-                    };
+                    let v = if a != 0 { b % a } else { 0 };
                     self.set(id_b, v);
-                },
+                }
                 MDI => {
                     self.cycle += 3;
                     let a = self.value_signed(id_a, true, true);
                     let b = self.value_signed(id_b, false, false);
-                    let v = if a != 0 {
-                        b % a
-                    } else {
-                        0
-                    };
+                    let v = if a != 0 { b % a } else { 0 };
                     self.set(id_b, v as u16);
-                },
+                }
                 AND => {
                     self.cycle += 1;
                     let v = self.value(id_a, true, true) & self.value(id_b, false, false);
                     self.set(id_b, v);
-                },
+                }
                 BOR => {
                     self.cycle += 1;
                     let v = self.value(id_a, true, true) | self.value(id_b, false, false);
                     self.set(id_b, v);
-                },
+                }
                 XOR => {
                     self.cycle += 1;
                     let v = self.value(id_a, true, true) ^ self.value(id_b, false, false);
                     self.set(id_b, v);
-                },
+                }
                 // TODO: These can panic (in debug mode) if shifting too much (>=16)
                 SHR => {
                     self.cycle += 1;
                     let a = self.value(id_a, true, true);
                     let b = self.value(id_b, false, false);
                     let v = b >> a;
-                    self.ex = (((b as u32) << 16)>>a) as u16;
+                    self.ex = (((b as u32) << 16) >> a) as u16;
                     self.set(id_b, v);
-                },
+                }
                 ASR => {
                     self.cycle += 1;
                     let a = self.value(id_a, true, true);
                     let b = self.value_signed(id_b, false, false);
                     let v = (b >> a) as u16;
-                    self.ex = (((b as u32) << 16)>> (a as u32)) as u16;
+                    self.ex = (((b as u32) << 16) >> (a as u32)) as u16;
                     self.set(id_b, v);
-                },
+                }
                 SHL => {
                     self.cycle += 1;
                     let a = self.value(id_a, true, true);
@@ -423,47 +423,49 @@ impl DCPU {
                     self.ex = (((b as u32) << (a as u32)) >> 16) as u16;
                     let v = b << a;
                     self.set(id_b, v);
-                },
+                }
                 IFB => {
                     self.cycle += 2;
                     let truth = (self.value(id_b, false, true) & self.value(id_a, true, true)) != 0;
                     self.process_conditional(truth);
-                },
+                }
                 IFC => {
                     self.cycle += 2;
                     let truth = (self.value(id_b, false, true) & self.value(id_a, true, true)) == 0;
                     self.process_conditional(truth);
-                },
+                }
                 IFE => {
                     self.cycle += 2;
                     let truth = self.value(id_b, false, true) == self.value(id_a, true, true);
                     self.process_conditional(truth);
-                },
+                }
                 IFN => {
                     self.cycle += 2;
                     let truth = self.value(id_b, false, true) != self.value(id_a, true, true);
                     self.process_conditional(truth);
-                },
+                }
                 IFG => {
                     self.cycle += 2;
                     let truth = self.value(id_b, false, true) > self.value(id_a, true, true);
                     self.process_conditional(truth);
-                },
+                }
                 IFA => {
                     self.cycle += 2;
-                    let truth = self.value_signed(id_b, false, true) > self.value_signed(id_a, true, true);
+                    let truth = self.value_signed(id_b, false, true) >
+                                self.value_signed(id_a, true, true);
                     self.process_conditional(truth);
-                },
+                }
                 IFL => {
                     self.cycle += 2;
                     let truth = self.value(id_b, false, true) < self.value(id_a, true, true);
                     self.process_conditional(truth);
-                },
+                }
                 IFU => {
                     self.cycle += 2;
-                    let truth = self.value_signed(id_b, false, true) < self.value_signed(id_a, true, true);
+                    let truth = self.value_signed(id_b, false, true) <
+                                self.value_signed(id_a, true, true);
                     self.process_conditional(truth);
-                },
+                }
                 ADX => {
                     self.cycle += 3;
                     let a = self.value(id_a, true, true);
@@ -475,7 +477,7 @@ impl DCPU {
                     }
                     let v = a.wrapping_add(b).wrapping_add(self.ex);
                     self.set(id_b, v);
-                },
+                }
                 SBX => {
                     self.cycle += 3;
                     let a = self.value(id_a, true, true);
@@ -487,7 +489,7 @@ impl DCPU {
                     }
                     let v = a.wrapping_sub(b).wrapping_add(self.ex);
                     self.set(id_b, v);
-                },
+                }
                 STI => {
                     self.cycle += 2;
                     let v = self.value(id_a, true, true);
@@ -497,7 +499,7 @@ impl DCPU {
                     let v_j = self.reg[REG_J];
                     self.reg[REG_I] = v_i.wrapping_add(1);
                     self.reg[REG_J] = v_j.wrapping_add(1);
-                },
+                }
                 STD => {
                     self.cycle += 2;
                     let v = self.value(id_a, true, true);
@@ -507,8 +509,8 @@ impl DCPU {
                     let v_j = self.reg[REG_J];
                     self.reg[REG_I] = v_i.wrapping_sub(1);
                     self.reg[REG_J] = v_j.wrapping_sub(1);
-                },
-                _ => {},
+                }
+                _ => {}
             }
         }
         if self.skip_next {
@@ -546,27 +548,27 @@ impl DCPU {
             0 => {
                 // Terminate if a 0x00 is processed as an instruction
                 self.terminate = true;
-            },
+            }
             JSR => {
                 self.cycle += 3;
                 self.sp = self.sp.wrapping_sub(1);
                 let new_pc = self.value(id_a, true, true);
                 self.mem[self.sp as usize] = self.pc;
                 self.pc = new_pc;
-            },
+            }
             INT => {
                 let message = self.value(id_a, true, true);
                 self.interrupt(message);
-            },
+            }
             IAG => {
                 self.cycle += 1;
                 let ia = self.ia;
                 self.set(id_a, ia);
-            },
+            }
             IAS => {
                 self.cycle += 1;
                 self.ia = self.value(id_a, true, true);
-            },
+            }
             RFI => {
                 self.cycle += 3;
                 self.interrupt_queueing = false;
@@ -575,17 +577,17 @@ impl DCPU {
                 self.sp = self.sp.wrapping_add(1);
                 self.pc = self.mem[self.sp as usize];
                 self.sp = self.sp.wrapping_add(1);
-            },
+            }
             IAQ => {
                 self.cycle += 2;
                 let a = self.value(id_a, true, true);
                 self.interrupt_queueing = a > 0;
-            },
+            }
             HWN => {
                 self.cycle += 2;
                 let n_devices = self.devices.len() as u16;
                 self.set(id_a, n_devices);
-            },
+            }
             HWQ => {
                 self.cycle += 4;
                 let device_id = self.value(id_a, true, true) as usize;
@@ -597,17 +599,15 @@ impl DCPU {
                          d.info_version(),
                          d.info_manufacturer_id_lower(),
                          d.info_manufacturer_id_upper())
-                    },
-                    None => {
-                        (0, 0, 0, 0, 0)
-                    },
+                    }
+                    None => (0, 0, 0, 0, 0),
                 };
                 self.reg[REG_A] = i1;
                 self.reg[REG_B] = i2;
                 self.reg[REG_C] = i3;
                 self.reg[REG_X] = i4;
                 self.reg[REG_Y] = i5;
-            },
+            }
             HWI => {
                 self.cycle += 4;
                 let device_id = self.value(id_a, true, true) as usize;
@@ -616,7 +616,7 @@ impl DCPU {
                     let mut device = devices.get(device_id).unwrap().borrow_mut();
                     device.process_interrupt(self);
                 }
-            },
+            }
             // Extensions
             OUT => {
                 // Temporary printing
@@ -634,8 +634,8 @@ impl DCPU {
             OUV => {
                 let a = self.value(id_a, true, true);
                 println!("{}", a);
-            },
-            _ => {},
+            }
+            _ => {}
         }
     }
 
@@ -663,7 +663,7 @@ impl DCPU {
 
     // This function will assemble the binary for you, so the input file should be a .asm file.
     //pub fn load_from_assembly_file(&mut self, path: &Path) -> Result<()> {
-        // TODO
+    // TODO
     //}
 
     #[allow(dead_code)]
@@ -671,10 +671,20 @@ impl DCPU {
         println!("PC {:04x} SP {:04x} IA {:04x} EX {:04x}\n\
                   A  {:04x} B  {:04x} C  {:04x}\n\
                   X  {:04x} Y  {:04x} Z  {:04x}\n\
-                  I  {:04x} J  {:04x}                cycles: {:6}", self.pc,
-                 self.sp, self.ia, self.ex, self.reg[0], self.reg[1], self.reg[2], self.reg[3],
-                 self.reg[4], self.reg[5], self.reg[6], self.reg[7], self.cycle
-                );
+                  I  {:04x} J  {:04x}                cycles: {:6}",
+                 self.pc,
+                 self.sp,
+                 self.ia,
+                 self.ex,
+                 self.reg[0],
+                 self.reg[1],
+                 self.reg[2],
+                 self.reg[3],
+                 self.reg[4],
+                 self.reg[5],
+                 self.reg[6],
+                 self.reg[7],
+                 self.cycle);
 
         // Determine context window
         let rows = MEMORY_SIZE / 8;
